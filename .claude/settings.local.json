@@ -17,7 +17,16 @@
       "Bash(python -m pip install flask flask-socketio)",
       "Bash(python -m pip install customtkinter pillow)",
       "WebFetch(domain:www.instagram.com)",
-      "WebFetch(domain:www.dexterai.org)"
+      "WebFetch(domain:www.dexterai.org)",
+      "Bash(python -m pip install pywebview)",
+      "Bash(python -c \"import webview; print\\(webview.__version__\\)\")",
+      "Bash(python -m pip install pywebview --no-deps)",
+      "Bash(python -m pip install proxy-tools bottle)",
+      "Bash(python -m pip install PyQt6 PyQt6-WebEngine)",
+      "Bash(python -c \"import PyQt6; print\\('PyQt6 OK'\\)\")",
+      "Bash(python -c \"from PyQt6.QtWebEngineWidgets import QWebEngineView; print\\('WebEngine OK'\\)\")",
+      "Bash(python -m pip install PyQt6)",
+      "Bash(python -m pip install PyQt6-WebEngine)"
     ]
   }
 }

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>J.A.R.V.I.S.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body>
+
+  <!-- Fundo animado -->
+  <div class="bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <canvas id="grid-canvas"></canvas>
+  </div>
+
+  <!-- Layout principal -->
+  <div class="app">
+
+    <!-- Barra de título personalizada -->
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-left">
+        <span class="tbar-dot"></span>
+        <span class="tbar-title">J.A.R.V.I.S.</span>
+        <span class="tbar-sub">Assistente Virtual Inteligente</span>
+      </div>
+      <div class="titlebar-btns">
+        <button class="tbar-btn min-btn" onclick="api && api.minimizar()" title="Minimizar">—</button>
+        <button class="tbar-btn close-btn" onclick="api && api.fechar()" title="Fechar">✕</button>
+      </div>
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="content">
+
+      <!-- Painel esquerdo -->
+      <div class="panel-left">
+        <div class="orb-wrap">
+          <!-- Anéis decorativos -->
+          <div class="ring ring-outer"></div>
+          <div class="ring ring-mid"></div>
+          <div class="ring ring-inner"></div>
+          <!-- Orb central -->
+          <div class="orb" id="orb">
+            <svg class="mic-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="9" y="2" width="6" height="11" rx="3" fill="currentColor"/>
+              <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="8"  y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- Ondas de áudio -->
+          <div class="waves" id="waves">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-pill" id="statusPill">
+          <span class="status-led" id="statusLed"></span>
+          <span class="status-txt" id="statusTxt">STANDBY</span>
+        </div>
+
+        <!-- Botão -->
+        <button class="btn-speak" id="btnSpeak" onclick="iniciarEscuta()">
+          <span class="btn-glow"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="9" y="2" width="6" height="11" rx="3"/>
+            <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          FALAR
+        </button>
+        <p class="hint">pressiona <kbd>Espaço</kbd> para falar</p>
+      </div>
+
+      <!-- Divisor -->
+      <div class="divider"></div>
+
+      <!-- Painel direito: chat -->
+      <div class="panel-right">
+        <div class="chat-hdr">
+          <span class="chat-title">
+            <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="0,0 10,5 0,10" fill="currentColor"/></svg>
+            Registo de Atividade
+          </span>
+          <button class="btn-clear" onclick="limparChat()">limpar</button>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

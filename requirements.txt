@@ -1,8 +1,8 @@
+PyQt6
+PyQt6-WebEngine
 customtkinter
-pillow
 SpeechRecognition
 pyttsx3
-pyautogui
 sounddevice
 scipy
 numpy
