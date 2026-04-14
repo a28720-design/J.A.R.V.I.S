@@ -1,12 +1,14 @@
 """
 jarvis.py — Núcleo do assistente: voz, TTS e processamento de comandos.
-Não tem loop próprio; é controlado pelo servidor Flask (app.py).
+Não tem loop próprio; é controlado pelo main.py.
 """
 
 import datetime
 import os
 import subprocess
 import tempfile
+import threading
+import time
 import webbrowser
 
 import numpy as np
@@ -20,6 +22,80 @@ import speech_recognition as sr
 # ---------------------------------------------------------------------------
 SAMPLE_RATE = 16000
 DURATION    = 5        # segundos de gravação por comando
+
+# ---------------------------------------------------------------------------
+# Deteção de aplausos (inspirado em github.com/RafaTatay/jarvis)
+# ---------------------------------------------------------------------------
+CLAP_SAMPLE_RATE = 44100
+CLAP_BLOCK_SIZE  = int(CLAP_SAMPLE_RATE * 0.05)   # blocos de 50ms
+CLAP_THRESHOLD   = 0.18    # sensibilidade (sobe se detetar ruído, desce se não detetar)
+CLAP_COOLDOWN    = 0.25    # segundos mínimos entre aplausos
+CLAP_WINDOW      = 2.0     # janela de tempo para o 2º aplauso
+
+_clap_stream    = None
+_clap_times: list = []
+_clap_lock      = threading.Lock()
+_clap_callback  = None     # chamado quando dois aplausos são detetados
+
+
+def set_clap_callback(fn):
+    """Regista a função a chamar quando dois aplausos são detetados."""
+    global _clap_callback
+    _clap_callback = fn
+
+
+def _clap_audio_cb(indata, frames, time_info, status):
+    """Callback do stream de áudio — corre numa thread interna do sounddevice."""
+    global _clap_times
+
+    rms = float(np.sqrt(np.mean(indata ** 2)))
+    now = time.time()
+
+    if rms < CLAP_THRESHOLD:
+        return
+
+    with _clap_lock:
+        # Ignora se ainda estamos no cooldown do aplauso anterior
+        if _clap_times and (now - _clap_times[-1]) < CLAP_COOLDOWN:
+            return
+
+        _clap_times.append(now)
+        # Remove aplausos fora da janela de tempo
+        _clap_times = [t for t in _clap_times if now - t <= CLAP_WINDOW]
+
+        print(f"[CLAP] 👏 {len(_clap_times)}/2  (RMS={rms:.3f})")
+
+        if len(_clap_times) >= 2:
+            _clap_times = []
+            if _clap_callback:
+                threading.Thread(target=_clap_callback, daemon=True).start()
+
+
+def start_clap_listener():
+    """Inicia o stream de deteção de aplausos em background."""
+    global _clap_stream
+    if _clap_stream is not None:
+        return
+    _clap_stream = sd.InputStream(
+        samplerate=CLAP_SAMPLE_RATE,
+        blocksize=CLAP_BLOCK_SIZE,
+        channels=1,
+        dtype="float32",
+        callback=_clap_audio_cb,
+    )
+    _clap_stream.start()
+    print("[CLAP] A ouvir aplausos...")
+
+
+def stop_clap_listener():
+    """Para o stream de deteção de aplausos."""
+    global _clap_stream, _clap_times
+    if _clap_stream is not None:
+        _clap_stream.stop()
+        _clap_stream.close()
+        _clap_stream = None
+    with _clap_lock:
+        _clap_times = []
 
 # ---------------------------------------------------------------------------
 # Motor de voz (TTS) — inicializado uma vez

@@ -131,6 +131,32 @@ function ripple() {
   }
 }
 
+// ── Deteção de aplausos ──────────────────────────────────────
+const clapIndicator = document.getElementById("clapIndicator");
+const clapTxt       = document.getElementById("clapTxt");
+let   clapFlashTimer = null;
+
+function setClapAtivo(ativo) {
+  if (ativo) {
+    clapIndicator.classList.add("ativo");
+    clapIndicator.classList.remove("flash");
+    clapTxt.textContent = "bate palmas 2× para ativar";
+  } else {
+    clapIndicator.classList.remove("ativo", "flash");
+    clapTxt.textContent = "a gravar voz...";
+  }
+}
+
+// Flash visual quando o Python deteta um aplauso
+// (pode ser chamado pelo bridge se quisermos indicar cada aplauso)
+function flashClap() {
+  clapIndicator.classList.add("flash");
+  clearTimeout(clapFlashTimer);
+  clapFlashTimer = setTimeout(() => {
+    clapIndicator.classList.remove("flash");
+  }, 400);
+}
+
 // ── Atalho de teclado ────────────────────────────────────────
 document.addEventListener("keydown", e => {
   if (e.code === "Space" && !btnSpeak.disabled) {

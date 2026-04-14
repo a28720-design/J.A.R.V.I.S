@@ -407,6 +407,59 @@ kbd {
   color: var(--text-muted);
 }
 
+/* ── Indicador de aplausos ──────────────────────────────── */
+.clap-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  color: var(--text-dim);
+  transition: all .3s;
+  margin-top: -6px;
+}
+
+.clap-icon { font-size: 13px; }
+
+.clap-txt { letter-spacing: .04em; }
+
+.clap-led {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  margin-left: auto;
+  transition: background .3s, box-shadow .3s;
+}
+
+.clap-indicator.ativo {
+  border-color: rgba(124,58,237,.2);
+  color: var(--text-muted);
+}
+.clap-indicator.ativo .clap-led {
+  background: var(--accent-l);
+  box-shadow: 0 0 8px var(--glow);
+  animation: clap-blink 2s ease-in-out infinite;
+}
+@keyframes clap-blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+
+/* Flash verde quando deteta aplauso */
+.clap-indicator.flash {
+  border-color: rgba(16,185,129,.4);
+  background: rgba(16,185,129,.06);
+}
+.clap-indicator.flash .clap-led {
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green-glow);
+  animation: none;
+}
+
 /* ── Painel direito: chat ────────────────────────────────── */
 .panel-right {
   display: flex;

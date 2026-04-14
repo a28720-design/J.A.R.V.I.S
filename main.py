@@ -59,19 +59,25 @@ class Bridge(QObject):
 
     # ── Thread de voz ─────────────────────────────────────────────────────────
     def _escutar_thread(self):
+        # Para o listener de aplausos antes de gravar (evita conflito de stream)
+        jarvis.stop_clap_listener()
         self._js("setEstado('ouvir')")
+        self._js("setClapAtivo(false)")
+
         comando = jarvis.ouvir()
 
         if not comando:
             self._js("setEstado('standby')")
             self._js_msg("sistema", "Não percebi. Tenta outra vez.")
-            self._a_correr = False
-            return
+        else:
+            self._js_msg("user", comando)
+            self._js("setEstado('processar')")
+            jarvis.processar_comando(comando)
+            self._js("setEstado('standby')")
 
-        self._js_msg("user", comando)
-        self._js("setEstado('processar')")
-        jarvis.processar_comando(comando)
-        self._js("setEstado('standby')")
+        # Reinicia o listener de aplausos após gravar
+        jarvis.start_clap_listener()
+        self._js("setClapAtivo(true)")
         self._a_correr = False
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -125,11 +131,19 @@ class MainWindow(QMainWindow):
         self._drag_pos = None
 
     def _on_loaded(self):
-        """Quando a página carrega, inicia a boas-vindas."""
+        """Quando a página carrega, inicia boas-vindas e listener de aplausos."""
         def bv():
             time.sleep(0.5)
-            jarvis.falar("Olá. Sou o Jarvis. Clica em Falar para começar.")
+            jarvis.falar("Olá. Sou o Jarvis. Clica em Falar ou bate palmas duas vezes para começar.")
+            # Inicia deteção de aplausos
+            jarvis.set_clap_callback(self._on_double_clap)
+            jarvis.start_clap_listener()
+            self.bridge._js("setClapAtivo(true)")
         threading.Thread(target=bv, daemon=True).start()
+
+    def _on_double_clap(self):
+        """Chamado quando dois aplausos são detetados."""
+        self.bridge.iniciar_escuta()
 
     # Drag da janela frameless
     def mousePressEvent(self, e):
