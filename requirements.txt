@@ -1,3 +1,5 @@
+flask
+flask-socketio
 SpeechRecognition
 pyttsx3
 pyautogui

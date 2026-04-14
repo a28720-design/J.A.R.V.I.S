@@ -1,5 +1,11 @@
+"""
+jarvis.py — Núcleo do assistente: voz, TTS e processamento de comandos.
+Não tem loop próprio; é controlado pelo servidor Flask (app.py).
+"""
+
 import datetime
 import os
+import subprocess
 import tempfile
 import webbrowser
 
@@ -10,42 +16,52 @@ import sounddevice as sd
 import speech_recognition as sr
 
 # ---------------------------------------------------------------------------
-# Configuração
+# Configuração de áudio
 # ---------------------------------------------------------------------------
-SAMPLE_RATE = 16000   # Hz — ideal para reconhecimento de voz
-DURATION    = 5       # segundos de gravação por comando
-WAKE_WORD   = "jarvis"
+SAMPLE_RATE = 16000
+DURATION    = 5        # segundos de gravação por comando
 
 # ---------------------------------------------------------------------------
-# Motor de voz (text-to-speech)
+# Motor de voz (TTS) — inicializado uma vez
 # ---------------------------------------------------------------------------
 engine = pyttsx3.init()
-engine.setProperty("rate", 165)          # velocidade da voz
+engine.setProperty("rate", 160)
 engine.setProperty("volume", 1.0)
 
+# Callback de resposta — substituído pela interface
+_resposta_callback = None
+
+def set_resposta_callback(fn):
+    """Regista uma função que é chamada sempre que Jarvis responde."""
+    global _resposta_callback
+    _resposta_callback = fn
+
 def falar(texto: str) -> None:
-    """Jarvis responde em voz alta e imprime no ecrã."""
-    print(f"JARVIS: {texto}")
+    """Fala o texto em voz alta e chama o callback de resposta."""
+    print(f"[JARVIS] {texto}")
+    if _resposta_callback:
+        _resposta_callback(texto)
     engine.say(texto)
     engine.runAndWait()
 
 # ---------------------------------------------------------------------------
-# Captura e reconhecimento de voz
+# Reconhecimento de voz (STT)
 # ---------------------------------------------------------------------------
 recognizer = sr.Recognizer()
 
 def ouvir() -> str:
-    """Grava áudio do microfone e devolve o texto reconhecido (minúsculas)."""
-    print("A ouvir...")
+    """
+    Grava DURATION segundos do microfone e devolve o texto (minúsculas).
+    Usa sounddevice + SpeechRecognition (sem PyAudio).
+    """
     audio_data = sd.rec(
         int(DURATION * SAMPLE_RATE),
         samplerate=SAMPLE_RATE,
         channels=1,
         dtype="int16",
     )
-    sd.wait()  # aguarda fim da gravação
+    sd.wait()
 
-    # Guarda num ficheiro WAV temporário para o SpeechRecognition processar
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         tmp_path = tmp.name
 
@@ -55,7 +71,6 @@ def ouvir() -> str:
         with sr.AudioFile(tmp_path) as source:
             audio = recognizer.record(source)
         texto = recognizer.recognize_google(audio, language="pt-PT")
-        print(f"Reconhecido: {texto}")
         return texto.lower()
     except sr.UnknownValueError:
         return ""
@@ -68,31 +83,22 @@ def ouvir() -> str:
 # ---------------------------------------------------------------------------
 # Processamento de comandos
 # ---------------------------------------------------------------------------
-def processar_comando(comando: str) -> bool:
-    """
-    Interpreta e executa um comando.
-    Devolve False se o utilizador pedir para sair.
-    """
+def processar_comando(comando: str) -> None:
+    """Interpreta e executa um comando de texto."""
 
-    # --- Sair ---
-    if any(p in comando for p in ["sair", "desligar", "tchau", "adeus"]):
-        falar("Até logo. Desligando.")
-        return False
-
-    # --- Horas ---
+    # Horas
     if any(p in comando for p in ["horas", "hora", "que horas"]):
         agora = datetime.datetime.now().strftime("%H:%M")
         falar(f"São {agora}.")
 
-    # --- Data ---
+    # Data
     elif any(p in comando for p in ["data", "dia", "que dia"]):
         hoje = datetime.datetime.now().strftime("%d de %B de %Y")
         falar(f"Hoje é {hoje}.")
 
-    # --- Pesquisa no Google ---
-    elif "pesquisa" in comando or "procura" in comando or "pesquisar" in comando:
-        # Extrai o termo de pesquisa depois da palavra-chave
-        for kw in ["pesquisa", "procura", "pesquisar"]:
+    # Pesquisa no Google
+    elif any(p in comando for p in ["pesquisa", "procura", "pesquisar", "google"]):
+        for kw in ["pesquisa", "procura", "pesquisar", "google"]:
             if kw in comando:
                 termo = comando.split(kw, 1)[-1].strip()
                 break
@@ -102,53 +108,65 @@ def processar_comando(comando: str) -> bool:
         else:
             falar("O que devo pesquisar?")
 
-    # --- Abrir aplicações ---
-    elif "abre" in comando or "abrir" in comando:
-        if "chrome" in comando or "browser" in comando or "navegador" in comando:
+    # Abrir aplicações
+    elif any(p in comando for p in ["abre", "abrir", "abre o", "abrir o"]):
+        if any(p in comando for p in ["chrome", "browser", "navegador"]):
             falar("A abrir o Chrome.")
-            os.startfile("chrome")
-        elif "notepad" in comando or "bloco de notas" in comando:
+            subprocess.Popen("start chrome", shell=True)
+        elif any(p in comando for p in ["notepad", "bloco de notas"]):
             falar("A abrir o Bloco de Notas.")
-            os.startfile("notepad")
-        elif "explorador" in comando or "ficheiros" in comando:
+            subprocess.Popen("notepad", shell=True)
+        elif any(p in comando for p in ["explorador", "ficheiros", "explorer"]):
             falar("A abrir o Explorador de Ficheiros.")
-            os.startfile("explorer")
+            subprocess.Popen("explorer", shell=True)
         elif "calculadora" in comando:
             falar("A abrir a Calculadora.")
-            os.startfile("calc")
+            subprocess.Popen("calc", shell=True)
+        elif "spotify" in comando:
+            falar("A abrir o Spotify.")
+            subprocess.Popen("start spotify", shell=True)
+        elif "discord" in comando:
+            falar("A abrir o Discord.")
+            subprocess.Popen("start discord", shell=True)
         else:
             falar("Não sei abrir essa aplicação.")
 
-    # --- Comando não reconhecido ---
+    # Volume
+    elif "volume" in comando:
+        if any(p in comando for p in ["aumenta", "sobe", "mais"]):
+            for _ in range(5):
+                subprocess.run(
+                    ["powershell", "-c",
+                     "(New-Object -ComObject WScript.Shell).SendKeys([char]175)"],
+                    capture_output=True
+                )
+            falar("Volume aumentado.")
+        elif any(p in comando for p in ["diminui", "baixa", "menos"]):
+            for _ in range(5):
+                subprocess.run(
+                    ["powershell", "-c",
+                     "(New-Object -ComObject WScript.Shell).SendKeys([char]174)"],
+                    capture_output=True
+                )
+            falar("Volume reduzido.")
+        elif any(p in comando for p in ["mudo", "silêncio", "silencio", "cala"]):
+            subprocess.run(
+                ["powershell", "-c",
+                 "(New-Object -ComObject WScript.Shell).SendKeys([char]173)"],
+                capture_output=True
+            )
+            falar("Áudio em silêncio.")
+
+    # Cumprimentos
+    elif any(p in comando for p in ["olá", "ola", "bom dia", "boa tarde", "boa noite"]):
+        hora = datetime.datetime.now().hour
+        if hora < 12:
+            falar("Bom dia! Como posso ajudar?")
+        elif hora < 18:
+            falar("Boa tarde! Em que posso ser útil?")
+        else:
+            falar("Boa noite! Às suas ordens.")
+
+    # Comando não reconhecido
     else:
-        falar("Não percebi o comando. Tenta outra vez.")
-
-    return True
-
-# ---------------------------------------------------------------------------
-# Loop principal
-# ---------------------------------------------------------------------------
-def main() -> None:
-    falar("Olá. Sou o Jarvis, o teu assistente pessoal. Como posso ajudar?")
-
-    ativo = True
-    while ativo:
-        comando = ouvir()
-        if not comando:
-            continue
-
-        # Modo wake-word: só reage se ouvir "jarvis"
-        if WAKE_WORD in comando:
-            # Remove a wake-word e processa o resto
-            comando_limpo = comando.replace(WAKE_WORD, "").strip()
-            if not comando_limpo:
-                falar("Sim? Estou a ouvir.")
-                comando_limpo = ouvir()
-            ativo = processar_comando(comando_limpo)
-        # Modo direto (sem wake-word): aceita tudo enquanto estiver ativo
-        # Descomenta a linha abaixo para desativar o modo wake-word:
-        # ativo = processar_comando(comando)
-
-
-if __name__ == "__main__":
-    main()
+        falar("Não percebi o comando. Tenta dizer jarvis seguido do que precisas.")

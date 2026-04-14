@@ -1,0 +1,403 @@
+/* =========================================================
+   J.A.R.V.I.S. — Interface CSS
+   Tema: Dark futurista com glassmorphism e neon
+   ========================================================= */
+
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #050d1a;
+  --bg2:         #0a1628;
+  --glass:       rgba(10, 22, 40, 0.6);
+  --accent:      #00b4ff;
+  --accent2:     #0077b6;
+  --glow:        rgba(0, 180, 255, 0.35);
+  --green:       #00f5a0;
+  --green-glow:  rgba(0, 245, 160, 0.35);
+  --red:         #ff4d6d;
+  --text:        #e0f7ff;
+  --text-dim:    #3a6a7e;
+  --border:      rgba(0, 180, 255, 0.15);
+  --font:        'Courier New', Courier, monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+}
+
+/* ── Partículas no fundo ── */
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Wrapper ── */
+.wrapper {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 340px;
+  grid-template-areas:
+    "header  header"
+    "main    chat"
+    "main    chat";
+  height: 100vh;
+  padding: 24px 32px 24px 32px;
+  gap: 24px;
+}
+
+/* ── Header ── */
+header {
+  grid-area: header;
+  text-align: center;
+  padding-bottom: 8px;
+}
+
+.logo {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+.logo-j   { color: var(--accent); text-shadow: 0 0 20px var(--glow); }
+.logo-dot { color: var(--text-dim); font-size: 0.6em; }
+
+.subtitulo {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.header-line {
+  width: 180px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 14px auto 0;
+}
+
+/* ── Main (orb + status + botão) ── */
+main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+/* ── Orb ── */
+.orb-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orb-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  animation: ring-spin linear infinite;
+}
+.ring-1 { width: 200px; height: 200px; animation-duration: 8s;  border-color: rgba(0,180,255,.25); }
+.ring-2 { width: 165px; height: 165px; animation-duration: 12s; animation-direction: reverse; }
+.ring-3 { width: 130px; height: 130px; animation-duration: 6s; }
+
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.orb {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #0a3a5a, #020a14);
+  border: 2px solid var(--accent2);
+  box-shadow:
+    0 0 20px var(--glow),
+    0 0 60px rgba(0,180,255,.1),
+    inset 0 0 20px rgba(0,180,255,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow .4s, border-color .4s;
+  animation: orb-pulse 3s ease-in-out infinite;
+}
+
+@keyframes orb-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--glow), 0 0 60px rgba(0,180,255,.1), inset 0 0 20px rgba(0,180,255,.08); }
+  50%       { box-shadow: 0 0 35px var(--glow), 0 0 90px rgba(0,180,255,.2), inset 0 0 30px rgba(0,180,255,.15); }
+}
+
+.mic-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px var(--glow));
+}
+
+/* Estado: a ouvir */
+body.ouvir .orb {
+  border-color: var(--green);
+  box-shadow: 0 0 30px var(--green-glow), 0 0 80px rgba(0,245,160,.15), inset 0 0 25px rgba(0,245,160,.12);
+  animation: orb-pulse-green 1s ease-in-out infinite;
+}
+body.ouvir .mic-icon { color: var(--green); filter: drop-shadow(0 0 8px var(--green-glow)); }
+body.ouvir .ring-1   { border-color: rgba(0,245,160,.4); animation-duration: 2s; }
+body.ouvir .ring-2   { border-color: rgba(0,245,160,.2); animation-duration: 3s; }
+
+@keyframes orb-pulse-green {
+  0%, 100% { box-shadow: 0 0 30px var(--green-glow), 0 0 80px rgba(0,245,160,.15), inset 0 0 25px rgba(0,245,160,.12); }
+  50%       { box-shadow: 0 0 50px var(--green-glow), 0 0 120px rgba(0,245,160,.3), inset 0 0 40px rgba(0,245,160,.2); }
+}
+
+/* Estado: a processar */
+body.processar .orb {
+  border-color: var(--accent);
+  animation: orb-spin-glow 0.8s linear infinite;
+}
+@keyframes orb-spin-glow {
+  from { filter: hue-rotate(0deg) brightness(1.2); }
+  to   { filter: hue-rotate(60deg) brightness(1.4); }
+}
+
+/* ── Ondas de áudio ── */
+.wave-bars {
+  position: absolute;
+  bottom: -30px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity .3s;
+}
+body.ouvir .wave-bars { opacity: 1; }
+
+.wave-bars span {
+  display: block;
+  width: 4px;
+  background: var(--green);
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--green-glow);
+  animation: wave-bar 0.6s ease-in-out infinite alternate;
+}
+.wave-bars span:nth-child(1)  { animation-delay: 0.00s; height: 8px;  }
+.wave-bars span:nth-child(2)  { animation-delay: 0.07s; height: 14px; }
+.wave-bars span:nth-child(3)  { animation-delay: 0.14s; height: 20px; }
+.wave-bars span:nth-child(4)  { animation-delay: 0.21s; height: 24px; }
+.wave-bars span:nth-child(5)  { animation-delay: 0.28s; height: 18px; }
+.wave-bars span:nth-child(6)  { animation-delay: 0.21s; height: 24px; }
+.wave-bars span:nth-child(7)  { animation-delay: 0.14s; height: 20px; }
+.wave-bars span:nth-child(8)  { animation-delay: 0.07s; height: 14px; }
+.wave-bars span:nth-child(9)  { animation-delay: 0.00s; height: 8px;  }
+
+@keyframes wave-bar {
+  from { transform: scaleY(0.3); opacity: .6; }
+  to   { transform: scaleY(1);   opacity: 1;  }
+}
+
+/* ── Status badge ── */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  box-shadow: 0 0 6px var(--text-dim);
+  transition: background .3s, box-shadow .3s;
+}
+body.ouvir    .status-dot { background: var(--green); box-shadow: 0 0 10px var(--green-glow); }
+body.processar .status-dot { background: var(--accent); box-shadow: 0 0 10px var(--glow); animation: blink .5s step-end infinite; }
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.status-text {
+  color: var(--text-dim);
+  transition: color .3s;
+}
+body.ouvir    .status-text { color: var(--green);  }
+body.processar .status-text { color: var(--accent); }
+
+/* ── Botão microfone ── */
+.btn-mic {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 40px;
+  border: 2px solid var(--accent2);
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(0,119,182,.3), rgba(0,180,255,.1));
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: 0 0 20px rgba(0,180,255,.15);
+}
+.btn-mic:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 30px var(--glow), 0 0 60px rgba(0,180,255,.1);
+  transform: translateY(-2px);
+}
+.btn-mic:active { transform: translateY(0); }
+.btn-mic:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0,180,255,.3);
+  transform: scale(0);
+  animation: none;
+  pointer-events: none;
+}
+
+/* ── Chat panel (glassmorphism) ── */
+.chat-panel {
+  grid-area: chat;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+}
+
+.btn-clear {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-clear:hover { color: var(--red); border-color: var(--red); }
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+.chat-body::-webkit-scrollbar { width: 4px; }
+.chat-body::-webkit-scrollbar-track { background: transparent; }
+.chat-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Mensagens ── */
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: msg-in .25s ease-out;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.msg-text {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: 10px;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+/* Jarvis */
+.msg.jarvis .msg-label { color: var(--accent); }
+.msg.jarvis .msg-text  {
+  background: rgba(0,180,255,.08);
+  border: 1px solid rgba(0,180,255,.2);
+  color: var(--text);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+/* User */
+.msg.user .msg-label { color: var(--green); align-self: flex-end; }
+.msg.user .msg-text  {
+  background: rgba(0,245,160,.08);
+  border: 1px solid rgba(0,245,160,.2);
+  color: var(--text);
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+/* Sistema */
+.msg.sistema .msg-text {
+  background: rgba(255,77,109,.07);
+  border: 1px solid rgba(255,77,109,.2);
+  color: var(--red);
+  font-size: 0.75rem;
+  align-self: center;
+  text-align: center;
+}
+
+/* ── Responsivo mínimo ── */
+@media (max-width: 700px) {
+  .wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "main" "chat";
+    overflow-y: auto;
+    height: auto;
+  }
+  .chat-panel { min-height: 220px; }
+}

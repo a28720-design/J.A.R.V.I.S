@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git --version)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(pip list:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install pyttsx3)",
+      "Bash(python -m pip install SpeechRecognition)",
+      "Bash(python -m pip install pyautogui sounddevice scipy)",
+      "Bash(python -m pip install flask flask-socketio)"
+    ]
+  }
+}
