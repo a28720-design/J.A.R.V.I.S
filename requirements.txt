@@ -1,5 +1,5 @@
-flask
-flask-socketio
+customtkinter
+pillow
 SpeechRecognition
 pyttsx3
 pyautogui

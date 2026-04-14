@@ -14,7 +14,8 @@
       "Bash(python -m pip install pyttsx3)",
       "Bash(python -m pip install SpeechRecognition)",
       "Bash(python -m pip install pyautogui sounddevice scipy)",
-      "Bash(python -m pip install flask flask-socketio)"
+      "Bash(python -m pip install flask flask-socketio)",
+      "Bash(python -m pip install customtkinter pillow)"
     ]
   }
 }
